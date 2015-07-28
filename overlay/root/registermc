@@ -1,0 +1,14 @@
+#!/bin/sh -ex
+
+# Copy license file to mediacenter home directory (path must be relative)
+cp "$1" ~mediacenter/"$1"
+chown mediacenter:users ~mediacenter/"$1"
+
+# Command to install license to Media Center. Must pass in the license filename on the command line
+su - mediacenter -c"mediacenter20 /RestoreFromFile \"$1\""
+
+# Enable autostarting of Media Center
+chmod +x /etc/rc.local
+
+# Remove copied license file (it will expire after 14 days)
+rm ~mediacenter/"$1"

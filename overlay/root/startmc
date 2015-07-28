@@ -1,0 +1,8 @@
+#!/bin/sh -ex
+
+# Copy .Xauthority file so that forwarding works
+cp .Xauthority ~mediacenter
+chown mediacenter:users ~mediacenter/.Xauthority
+
+# Command to start Media Center so that it runs as the mediacenter user
+su - mediacenter -c"mediacenter20" &

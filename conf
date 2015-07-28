@@ -1,0 +1,28 @@
+#!/bin/bash -ex
+install()
+{
+    apt-get update
+    DEBIAN_FRONTEND=noninteractive apt-get -y \
+        -o DPkg::Options::=--force-confdef \
+        -o DPkg::Options::=--force-confold \
+        install $@
+}
+
+# download JRiver GPG key and repo path
+wget -q "http://dist.jriver.com/mediacenter@jriver.com.gpg.key" -O- | apt-key add -
+wget http://dist.jriver.com/latest/mediacenter/mediacenter20.list -O /etc/apt/sources.list.d/mediacenter20.list
+
+# install mediacenter binary and additional packages
+dpkg --add-architecture i386
+install mediacenter20 xauth xserver-xorg-video-dummy
+
+# create user for mediacenter to run under
+useradd -c "JRiver Media Center User" -g users -mN -s /bin/bash mediacenter
+
+# add mediacenter to rc.local to autostart
+CONF=/etc/rc.local
+sed -i "s|^exit 0$|nohup Xorg >/dev/null 2>\&1 \&\nsleep 5\nsu - mediacenter -c\"export DISPLAY=:0;mediacenter20 /mediaserver\" \&\nexit 0|" $CONF
+
+# add mediacenter to confconsole services
+CONF=/etc/confconsole/services.txt
+sed -i "s|^File manager:.*|&\nMedia Center: http://\$ipaddr:52199|" $CONF
